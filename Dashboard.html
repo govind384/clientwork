@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
+    <style>
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #f9f9f9;
+      }
+
+      /* Navbar */
+      nav {
+        background: #007bff;
+        color: #fff;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 20px;
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+      }
+      .logo img {
+        height: 40px;
+      }
+      .menu,
+      .right-menu {
+        display: flex;
+        gap: 20px;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+      .menu > li,
+      .right-menu > li {
+        position: relative;
+        cursor: pointer;
+        color: #fff;
+      }
+      .menu > li:hover .dropdown,
+      .right-menu > li:hover .dropdown {
+        display: block;
+      }
+      .dropdown {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        background: #fff;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        border-radius: 5px;
+        min-width: 160px;
+        z-index: 100;
+        list-style: none;
+        margin: 0;
+        padding: 0; /* ✅ gap fix */
+      }
+      .right-menu > li .dropdown {
+        left: auto;
+        right: 0;
+      }
+      .dropdown li {
+        margin: 0;
+        padding: 10px;
+        cursor: pointer;
+        color: #333;
+      }
+      .dropdown li:hover {
+        background: #007bff;
+        color: #fff;
+      }
+
+      /* Sections */
+      .section {
+        display: none;
+        padding: 20px;
+      }
+      #dashboardSection {
+        display: block;
+      } /* default */
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        background: #fff;
+      }
+      th,
+      td {
+        border: 1px solid #ccc;
+        padding: 8px;
+        text-align: left;
+      }
+      th {
+        background: #f0f0f0;
+      }
+      td.no-cursor {
+        cursor: not-allowed;
+        color: #666;
+        background: #fafafa;
+      }
+
+      /* Forms */
+      .form-box {
+        background: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        max-width: 400px;
+        width: 90%;
+        position: relative;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, 0);
+      }
+      .form-section {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: calc(100vh - 70px);
+      }
+      .form-box input,
+      .form-box button {
+        width: 100%;
+        margin: 10px 0;
+        padding: 10px;
+      }
+      .form-box button {
+        background: #007bff;
+        color: #fff;
+        border: none;
+        cursor: pointer;
+      }
+      .form-box button:hover {
+        background: #0056b3;
+      }
+      .password-wrapper {
+        position: relative;
+      }
+      .password-wrapper i {
+        position: absolute;
+        top: 50%;
+        right: 10px;
+        cursor: pointer;
+      }
+
+      /* Modal */
+      .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        justify-content: center;
+        align-items: center;
+      }
+      .modal-content {
+        background: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        text-align: center;
+      }
+      .yes-btn,
+      .no-btn {
+        margin: 5px;
+        padding: 8px 16px;
+        cursor: pointer;
+      }
+
+      /* Responsive Navbar */
+      .hamburger {
+        display: none;
+        font-size: 24px;
+        cursor: pointer;
+        color: #fff;
+      }
+      @media (max-width: 768px) {
+        .menu,
+        .right-menu {
+          display: none;
+          flex-direction: column;
+          width: 100%;
+          background: #007bff;
+        }
+        .menu li,
+        .right-menu li {
+          padding: 10px;
+          border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .menu.show,
+        .right-menu.show {
+          display: flex;
+        }
+        nav {
+          flex-wrap: wrap;
+        }
+        .hamburger {
+          display: block;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navbar -->
+    <nav>
+      <div class="logo">
+        <img src="abc_tech-removebg-preview.png" alt="Logo" />
+      </div>
+      <div class="hamburger" onclick="toggleMenu()">
+        <i class="fa fa-bars"></i>
+      </div>
+      <ul class="menu">
+        <li>
+          Master ▾
+          <ul class="dropdown">
+            <li onclick="navigate('ledgerSection')">Ledger</li>
+            <li onclick="navigate('itemSection')">Item</li>
+          </ul>
+        </li>
+        <li>
+          Transaction ▾
+          <ul class="dropdown">
+            <li onclick="navigate('ordersSection')">Order</li>
+            <li onclick="navigate('despatchSection')">Despatch</li>
+          </ul>
+        </li>
+        <li>
+          Report ▾
+          <ul class="dropdown">
+            <li onclick="navigate('pendingOrderSection')">Pending Orders</li>
+            <li onclick="navigate('clearedOrderSection')">Cleared Orders</li>
+          </ul>
+        </li>
+      </ul>
+      <ul class="right-menu">
+        <li>
+          User ▾
+          <ul class="dropdown">
+            <li onclick="navigate('createUserSection')">Create User</li>
+            <li onclick="navigate('usersSection')">Users</li>
+          </ul>
+        </li>
+        <li>
+          Sumit ▾
+          <ul class="dropdown">
+            <li>Profile</li>
+            <li onclick="navigate('changePasswordSection')">Change Password</li>
+            <li onclick="openLogout()">Logout</li>
+          </ul>
+        </li>
+       
+      </ul>
+    </nav>
+
+    <!-- Dashboard -->
+  
+
+    <!-- Ledger -->
+    <div id="ledgerSection" class="section">
+      <h2>Ledger</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Group</th>
+            <th>Person Name</th>
+            <th>Phone No</th>
+            <th>Email ID</th>
+            <th>Closing Balance</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Item -->
+    <div id="itemSection" class="section">
+      <h2>Item</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Part No</th>
+            <th>MRP</th>
+            <th>HSN Code</th>
+            <th>GST Rate</th>
+            <th>Closing Balance</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Orders -->
+    <div id="ordersSection" class="section">
+      <h2>Orders</h2>
+      <div id="ordersArray"></div>
+    </div>
+
+    <!-- Despatch -->
+    <div id="despatchSection" class="section">
+      <h2>Despatch</h2>
+      <div id="despatchArray"></div>
+    </div>
+
+    <!-- Pending -->
+    <div id="pendingOrderSection" class="section">
+      <h2>Pending Orders</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Order Date</th>
+            <th>Order No</th>
+            <th>Party Name</th>
+            <th>Item Name</th>
+            <th>Order Qty</th>
+            <th>Pending Qty</th>
+            <th>Closing Balance</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Cleared -->
+    <div id="clearedOrderSection" class="section">
+      <h2>Cleared Orders</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Order Date</th>
+            <th>Order No</th>
+            <th>Party Name</th>
+            <th>Item Name</th>
+            <th>Order Qty</th>
+            <th>Cleared Qty</th>
+            <th>Closing Balance</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Create User -->
+    <div id="createUserSection" class="section form-section">
+      <div class="form-box">
+        <form>
+          <h3>Create User</h3>
+          <label>Name</label
+          ><input type="text" placeholder="Enter Name" required />
+          <label>Mail ID</label
+          ><input type="email" placeholder="Enter Email" required />
+          <label>Phone No</label
+          ><input type="text" placeholder="Enter Phone Number" required />
+          <label>Password</label>
+          <div class="password-wrapper">
+            <input
+              type="password"
+              id="createUserPassword"
+              placeholder="Enter Password"
+              required
+            />
+            <i class="fa-solid fa-eye" id="toggleCreateUserPassword"></i>
+          </div>
+          <!--<button type="submit">Create</button>-->
+        </form>
+      </div>
+    </div>
+
+    <!-- Users -->
+    <div id="usersSection" class="section">
+      <h2>Users</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>User ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Role</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>U001</td>
+            <td>abc</td>
+            <td>@example.com</td>
+            <td>9876543210</td>
+            <td>Admin</td>
+            <td>Active</td>
+          </tr>
+          <tr>
+            <td>U002</td>
+            <td>xyz</td>
+            <td>@example.com</td>
+            <td>9123456780</td>
+            <td>User</td>
+            <td>Inactive</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Change Password -->
+    <div id="changePasswordSection" class="section form-section">
+      <div class="form-box">
+        <h3>Change Password</h3>
+        <label>Current Password</label>
+        <div class="password-wrapper">
+          <input
+            type="password"
+            id="currentPassword"
+            placeholder="Enter Current Password"
+            required
+          />
+          <i class="fa-solid fa-eye" id="toggleCurrentPassword"></i>
+        </div>
+        <label>New Password</label>
+        <div class="password-wrapper">
+          <input
+            type="password"
+            id="newPassword"
+            placeholder="Enter New Password"
+            required
+          />
+          <i class="fa-solid fa-eye" id="toggleNewPassword"></i>
+        </div>
+        <label>Confirm New Password</label>
+        <div class="password-wrapper">
+          <input
+            type="password"
+            id="confirmPassword"
+            placeholder="Confirm New Password"
+            required
+          />
+          <i class="fa-solid fa-eye" id="toggleConfirmPassword"></i>
+        </div>
+        <p
+          id="passwordError"
+          style="color: red; display: none; font-size: 14px; margin-top: 5px"
+        ></p>
+        <button type="button" onclick="updatePassword()">
+          Update Password
+        </button>
+      </div>
+    </div>
+
+    <!-- Logout Modal -->
+    <div id="logoutModal" class="modal">
+      <div class="modal-content">
+        <p>Do you want to log out?</p>
+        <button class="yes-btn" onclick="logoutYes()">Yes</button>
+        <button class="no-btn" onclick="closeLogout()">No</button>
+      </div>
+    </div>
+
+    <script>
+      const orders = [
+        {
+          party: "ABC Traders",
+          item: "Item A",
+          part: "P001",
+          hsn: "HSN1",
+          gst: "18%",
+          mrp: "100",
+          closing: "50",
+          qty: "10",
+        },
+        {
+          party: "XYZ Corp",
+          item: "Item B",
+          part: "P002",
+          hsn: "HSN2",
+          gst: "12%",
+          mrp: "200",
+          closing: "40",
+          qty: "5",
+        },
+      ];
+      const despatches = [
+        {
+          party: "ABC Traders",
+          item: "Item A",
+          part: "P001",
+          hsn: "HSN1",
+          gst: "18%",
+          mrp: "100",
+          closing: "50",
+          pending: "5",
+          qty: "10",
+          despatch: "5",
+        },
+        {
+          party: "XYZ Corp",
+          item: "Item B",
+          part: "P002",
+          hsn: "HSN2",
+          gst: "12%",
+          mrp: "200",
+          closing: "40",
+          pending: "2",
+          qty: "5",
+          despatch: "3",
+        },
+      ];
+
+      function navigate(sectionId) {
+        history.pushState({ section: sectionId }, "", "#" + sectionId);
+        showSection(sectionId);
+        closeMenu(); // auto close mobile menu
+      }
+      function showSection(sectionId) {
+        document
+          .querySelectorAll(".section")
+          .forEach((sec) => (sec.style.display = "none"));
+        if (sectionId)
+          document.getElementById(sectionId).style.display = "block";
+        if (sectionId === "ordersSection") renderOrders();
+        if (sectionId === "despatchSection") renderDespatch();
+      }
+      function renderOrders() {
+        const container = document.getElementById("ordersArray");
+        container.innerHTML = `<table>
+      <tr><th>Party Name</th><th>Item Name</th><th>Part No</th><th>HSN</th><th>GST</th><th>MRP</th><th>Closing Balance</th><th>Qty</th></tr>
+      ${orders
+        .map(
+          (o) => `<tr>
+        <td>${o.party}</td><td>${o.item}</td><td>${o.part}</td>
+        <td class="no-cursor">${o.hsn}</td><td class="no-cursor">${o.gst}</td>
+        <td>${o.mrp}</td><td>${o.closing}</td><td>${o.qty}</td>
+      </tr>`
+        )
+        .join("")}
+    </table>`;
+      }
+      function renderDespatch() {
+        const container = document.getElementById("despatchArray");
+        container.innerHTML = `<table>
+      <tr><th>Party Name</th><th>Item Name</th><th>Part No</th><th>HSN</th><th>GST</th><th>MRP</th><th>Closing Balance</th><th>Pending Qty</th><th>Qty</th><th>Despatch Qty</th></tr>
+      ${despatches
+        .map(
+          (d) => `<tr>
+        <td>${d.party}</td><td>${d.item}</td><td>${d.part}</td>
+        <td class="no-cursor">${d.hsn}</td><td class="no-cursor">${d.gst}</td>
+        <td>${d.mrp}</td><td>${d.closing}</td><td>${d.pending}</td><td>${d.qty}</td><td>${d.despatch}</td>
+      </tr>`
+        )
+        .join("")}
+    </table>`;
+      }
+
+      // SPA history
+      window.onload = () => {
+        const hash = location.hash.replace("#", "");
+        if (hash) showSection(hash);
+        else showSection("dashboardSection");
+      };
+      window.onpopstate = (e) => {
+        if (e.state && e.state.section) showSection(e.state.section);
+        else showSection("dashboardSection");
+      };
+
+      // Logout
+      function openLogout() {
+        document.getElementById("logoutModal").style.display = "flex";
+      }
+      function closeLogout() {
+        document.getElementById("logoutModal").style.display = "none";
+      }
+      function logoutYes() {
+        alert("Logged out");
+        closeLogout();
+      }
+      function updatePassword() {
+        alert("Password Updated!");
+      }
+
+      // Hamburger toggle
+      function toggleMenu() {
+        document.querySelector(".menu").classList.toggle("show");
+        document.querySelector(".right-menu").classList.toggle("show");
+      }
+      function closeMenu() {
+        document.querySelector(".menu").classList.remove("show");
+        document.querySelector(".right-menu").classList.remove("show");
+      }
+    </script>
+  <!-- Code injected by live-server -->
+<script>
+	// <![CDATA[  <-- For SVG support
+	if ('WebSocket' in window) {
+		(function () {
+			function refreshCSS() {
+				var sheets = [].slice.call(document.getElementsByTagName("link"));
+				var head = document.getElementsByTagName("head")[0];
+				for (var i = 0; i < sheets.length; ++i) {
+					var elem = sheets[i];
+					var parent = elem.parentElement || head;
+					parent.removeChild(elem);
+					var rel = elem.rel;
+					if (elem.href && typeof rel != "string" || rel.length == 0 || rel.toLowerCase() == "stylesheet") {
+						var url = elem.href.replace(/(&|\?)_cacheOverride=\d+/, '');
+						elem.href = url + (url.indexOf('?') >= 0 ? '&' : '?') + '_cacheOverride=' + (new Date().valueOf());
+					}
+					parent.appendChild(elem);
+				}
+			}
+			var protocol = window.location.protocol === 'http:' ? 'ws://' : 'wss://';
+			var address = protocol + window.location.host + window.location.pathname + '/ws';
+			var socket = new WebSocket(address);
+			socket.onmessage = function (msg) {
+				if (msg.data == 'reload') window.location.reload();
+				else if (msg.data == 'refreshcss') refreshCSS();
+			};
+			if (sessionStorage && !sessionStorage.getItem('IsThisFirstTime_Log_From_LiveServer')) {
+				console.log('Live reload enabled.');
+				sessionStorage.setItem('IsThisFirstTime_Log_From_LiveServer', true);
+			}
+		})();
+	}
+	else {
+		console.error('Upgrade your browser. This Browser is NOT supported WebSocket for Live-Reloading.');
+	}
+	// ]]>
+</script>
+</body>
+</html>
